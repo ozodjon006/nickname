@@ -1,8 +1,21 @@
+# handlers/start.py
+
 from aiogram import types, Dispatcher
 from keyboards.default import main_menu
+from data.dp import set_user_human
+
 
 async def cmd_start(message: types.Message):
-    await message.answer("👋 Salom! Men Nickname botiman.\nQuyidan tanlang:", reply_markup=main_menu)
+    # Odam ekanligini anglash (oddiy)
+    if not message.from_user.is_bot:
+        await set_user_human(message.from_user.id, True)
+        text = "👋 Salom! Men Nickname botiman.\nQuyidan tanlang:"
+    else:
+        await set_user_human(message.from_user.id, False)
+        text = "🤖 Siz bot ekansiz. Cheklangan funksiya."
 
-def register_handlers(dp: Dispatcher):
-    dp.register_message_handler(cmd_start, commands=["start"])
+    await message.answer(text, reply_markup=main_menu)
+
+
+def register_handlers_start(dp: Dispatcher):
+    dp.register_message_handler(cmd_start, commands=['start'])

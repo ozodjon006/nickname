@@ -1,23 +1,30 @@
-from aiogram import Bot, Dispatcher
-from aiogram.utils import executor
-from config import BOT_TOKEN
-from handlers import start, nickname, saved, settings, info
+# bot.py
 import logging
+from aiogram import Bot, Dispatcher, executor
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
+from config import BOT_TOKEN
+
+from handlers import start, nickname, saved, settings, info
+from data.dp import init_db
+
+import asyncio
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(bot)
 
-# Handlerlarni ro‘yxatdan o‘tkazamiz
-start.register_handlers(dp)
-nickname.register_handlers(dp)
-saved.register_handlers(dp)
-settings.register_handlers(dp)
-info.register_handlers(dp)
+# FSM uchun storage
+storage = MemoryStorage()
+dp = Dispatcher(bot, storage=storage)
 
-async def on_startup(dp):
-    print("✅ Bot ishga tushdi!")
+start.register_handlers_start(dp)
+nickname.register_handlers_nickname(dp)
+saved.register_handlers_saved(dp)
+settings.register_handlers_settings(dp)
+info.register_handlers_info(dp)
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(init_db())
+    executor.start_polling(dp, skip_updates=True)
